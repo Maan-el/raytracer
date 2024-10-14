@@ -1,4 +1,11 @@
+// My crates
+mod color;
+mod vec3;
+
 use std::{fmt::Write, fs};
+
+use color::Color;
+use vec3::{Point, Vec3};
 
 const WIDTH: u32 = 256;
 const HEIGHT: u32 = 256;
@@ -7,21 +14,22 @@ const MAX_COLOR: u16 = 255;
 const PATH_IMG: &str = "out_img/imagem.ppm";
 
 fn main() {
-    let mut buf = String::with_capacity((WIDTH * HEIGHT) as usize);
+    let met = metadata();
+    let mut buf = String::with_capacity((WIDTH * HEIGHT) as usize + met.len() as usize);
 
-    write!(buf, "{}", metadata()).unwrap();
+    write!(buf, "{}", met).unwrap();
 
     for i in 0..HEIGHT {
         for j in 0..WIDTH {
-            let r = i as f64 / MAX_COLOR as f64;
-            let g = j as f64 / MAX_COLOR as f64;
-            let b = 0.0;
+            let pixel_color = Color(Vec3 {
+                points: [
+                    i as Point / MAX_COLOR as Point,
+                    j as Point / MAX_COLOR as Point,
+                    0.0,
+                ],
+            });
 
-            let r = (255.999 * r) as u8;
-            let g = (255.999 * g) as u8;
-            let b = (255.999 * b) as u8;
-
-            writeln!(buf, "{} {} {}", r, g, b).unwrap();
+            writeln!(buf, "{}", pixel_color).unwrap();
         }
     }
 
