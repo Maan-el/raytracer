@@ -186,7 +186,67 @@ impl Mul<Vec3> for Vec3 {
     #[inline(always)]
     fn mul(self, rhs: Vec3) -> Self::Output {
         Vec3 {
-            points: [self[0] * rhs[0], self[1] * rhs[1], self[2] * rhs[2]],
-        }
+#[cfg(test)]
+mod test {
+
+    use super::Vec3;
+
+    #[test]
+    fn basics() {
+        let v1 = Vec3 {
+            points: [0.0, 0.5, 0.8],
+        };
+
+        assert_eq!(v1.x(), 0.0);
+        assert_eq!(v1.y(), 0.5);
+        assert_eq!(v1.z(), 0.8);
+
+        let v2 = Vec3::new();
+        let v3 = Vec3::from(2.0);
+        let v4 = Vec3::from_scalars(0.0, 1, 23);
+        let v5 = Vec3::from_slice([1.0, 1.0, 1.0]);
+
+        assert_eq!(v2.points, [0.0, 0.0, 0.0]);
+        assert_eq!(v3.points, [2.0, 2.0, 2.0]);
+        assert_eq!(v4.points, [0.0, 1.0, 23.0]);
+        assert_eq!(v5.points, [1.0, 1.0, 1.0]);
+    }
+
+    #[test]
+    fn lenght_squared() {
+        let v1 = Vec3 {
+            points: [1.0, 1.0, 1.0],
+        };
+
+        assert_eq!(v1.lenght_squared(), 3.0);
+    }
+
+    #[test]
+    fn lenght() {
+        let v1: Vec3 = Vec3 {
+            points: [1.0, 1.0, 1.0],
+        };
+
+        assert!(1.732050 <= v1.lenght() && v1.lenght() <= 1.732051);
+    }
+
+    #[test]
+    fn division() {
+        let v1 = Vec3::from(4);
+
+        let res = v1 / 2;
+
+        assert_eq!(res.points, [2.0, 2.0, 2.0]);
+    }
+
+    #[test]
+    fn unit_vector() {
+        let v1 = Vec3::from(4);
+
+        let res = v1.unit_vector();
+
+        assert!(0.57735 <= res.points[0] && res.points[0] <= 0.57736);
+        assert!(0.57735 <= res.points[1] && res.points[1] <= 0.57736);
+        assert!(0.57735 <= res.points[2] && res.points[2] <= 0.57736);
     }
 }
