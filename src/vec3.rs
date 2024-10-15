@@ -1,6 +1,5 @@
 use std::{
-    fmt::Display,
-    ops::{Add, Div, Index, Mul, Neg, Sub},
+    ops::{Add, AddAssign, Div, Index, Mul, MulAssign, Neg, Sub, SubAssign},
     slice::SliceIndex,
 };
 
@@ -11,11 +10,34 @@ pub struct Vec3 {
     pub points: [Point; 3],
 }
 
+pub type Point3 = Vec3;
+
 impl Vec3 {
+    /// Generates a Vec3 with all values initialized to zero
     #[inline(always)]
     pub const fn new() -> Vec3 {
         Vec3 {
             points: [0.0, 0.0, 0.0],
+        }
+    }
+
+    #[inline(always)]
+    pub fn from_scalars<T, U, V>(s1: T, s2: U, s3: V) -> Vec3
+    where
+        T: Into<Point> + Copy,
+        U: Into<Point> + Copy,
+        V: Into<Point> + Copy,
+    {
+        Vec3 {
+            points: [s1.into(), s2.into(), s3.into()],
+        }
+    }
+
+    /// .Recieves a slice and returns a Vec3
+    #[inline(always)]
+    pub fn from_slice<T: Into<Point> + Copy>(values: [T; 3]) -> Vec3 {
+        Vec3 {
+            points: [values[0].into(), values[1].into(), values[2].into()],
         }
     }
 
@@ -66,10 +88,16 @@ impl Vec3 {
     }
 }
 
-impl Display for Vec3 {
+impl<T> From<T> for Vec3
+where
+    T: Into<Point> + Copy,
+{
+    /// Takes a single scalar value and creates a new Vec3 with repeating values.
     #[inline(always)]
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self[0], self[1], self[2])
+    fn from(value: T) -> Self {
+        Vec3 {
+            points: [value.into(), value.into(), value.into()],
+        }
     }
 }
 
@@ -95,97 +123,130 @@ impl Neg for Vec3 {
         }
     }
 }
+
 impl<T> Add<T> for Vec3
 where
-    T: Into<Point> + Copy,
+    T: Into<Vec3> + Copy,
 {
     type Output = Vec3;
 
     #[inline(always)]
     fn add(self, rhs: T) -> Self::Output {
-        Vec3 {
-            points: [
-                self[0] + rhs.into(),
-                self[1] + rhs.into(),
-                self[2] + rhs.into(),
-            ],
-        }
-    }
-}
-
-impl<T> Sub<T> for Vec3
-where
-    T: Into<Point> + Copy,
-{
-    type Output = Vec3;
-
-    #[inline(always)]
-    fn sub(self, rhs: T) -> Self::Output {
-        Vec3 {
-            points: [
-                self[0] - rhs.into(),
-                self[1] - rhs.into(),
-                self[2] - rhs.into(),
-            ],
-        }
-    }
-}
-
-impl<T> Mul<T> for Vec3
-where
-    T: Into<Point> + Copy,
-{
-    type Output = Vec3;
-
-    #[inline(always)]
-    fn mul(self, rhs: T) -> Self::Output {
-        Vec3 {
-            points: [
-                self[0] * rhs.into(),
-                self[1] * rhs.into(),
-                self[2] * rhs.into(),
-            ],
-        }
-    }
-}
-
-impl Div<Point> for Vec3 {
-    type Output = Vec3;
-
-    #[inline(always)]
-    fn div(self, rhs: Point) -> Self::Output {
-        self * (1.0 / rhs)
-    }
-}
-
-impl Add<Vec3> for Vec3 {
-    type Output = Vec3;
-
-    #[inline(always)]
-    fn add(self, rhs: Vec3) -> Self::Output {
+        let rhs = rhs.into();
         Vec3 {
             points: [self[0] + rhs[0], self[1] + rhs[1], self[2] + rhs[2]],
         }
     }
 }
 
-impl Sub<Vec3> for Vec3 {
+impl<T> Sub<T> for Vec3
+where
+    T: Into<Vec3> + Copy,
+{
     type Output = Vec3;
 
     #[inline(always)]
-    fn sub(self, rhs: Vec3) -> Self::Output {
+    fn sub(self, rhs: T) -> Self::Output {
+        let rhs = rhs.into();
         Vec3 {
             points: [self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2]],
         }
     }
 }
 
-impl Mul<Vec3> for Vec3 {
+impl<T> Mul<T> for Vec3
+where
+    T: Into<Vec3> + Copy,
+{
+    type Output = Vec3;
+
+    #[inline(always)]
+    fn mul(self, rhs: T) -> Self::Output {
+        let rhs = rhs.into();
+        Vec3 {
+            points: [self[0] * rhs[0], self[1] * rhs[1], self[2] * rhs[2]],
+        }
+    }
+}
+
+impl<T> Div<T> for Vec3
+where
+    T: Into<Point> + Copy,
+{
+    type Output = Vec3;
+
+    #[inline(always)]
+    fn div(self, rhs: T) -> Self::Output {
+        self * (1.0 / rhs.into())
+    }
+}
+
+impl Add<Vec3> for Point {
+    type Output = Vec3;
+
+    #[inline(always)]
+    fn add(self, rhs: Vec3) -> Self::Output {
+        let s: Vec3 = self.into();
+        Vec3 {
+            points: [s[0] + rhs[0], s[1] + rhs[1], s[2] + rhs[2]],
+        }
+    }
+}
+
+impl Sub<Vec3> for Point {
+    type Output = Vec3;
+
+    #[inline(always)]
+    fn sub(self, rhs: Vec3) -> Self::Output {
+        let s: Vec3 = self.into();
+        Vec3 {
+            points: [s[0] - rhs[0], s[1] - rhs[1], s[2] - rhs[2]],
+        }
+    }
+}
+
+impl Mul<Vec3> for Point {
     type Output = Vec3;
 
     #[inline(always)]
     fn mul(self, rhs: Vec3) -> Self::Output {
+        let s: Vec3 = self.into();
         Vec3 {
+            points: [s[0] * rhs[0], s[1] * rhs[1], s[2] * rhs[2]],
+        }
+    }
+}
+
+impl<T> AddAssign<T> for Vec3
+where
+    T: Into<Vec3> + Copy,
+{
+    #[inline(always)]
+    fn add_assign(&mut self, rhs: T) {
+        *self = *self + rhs;
+    }
+}
+
+impl<T> SubAssign<T> for Vec3
+where
+    T: Into<Vec3> + Copy,
+{
+    #[inline(always)]
+    fn sub_assign(&mut self, rhs: T) {
+        *self = *self - rhs
+    }
+}
+
+impl<T> MulAssign<T> for Vec3
+where
+    T: Into<Vec3> + Copy,
+{
+    #[inline(always)]
+    fn mul_assign(&mut self, rhs: T) {
+        *self = *self * rhs;
+    }
+}
+
 #[cfg(test)]
 mod test {
 
