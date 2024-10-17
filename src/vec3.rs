@@ -68,7 +68,7 @@ impl Vec3 {
 
     #[inline(always)]
     pub fn dot(&self, other: &Vec3) -> Point {
-        self[0] * other[0] + self[1] * other[1] + self[2] + other[2]
+        self[0] * other[0] + self[1] * other[1] + self[2] * other[2]
     }
 
     #[inline(always)]
