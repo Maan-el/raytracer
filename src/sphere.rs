@@ -1,15 +1,15 @@
 use crate::{
-    hit::{HitRecord, Hittable},
+    hit::{Hit, Hittable},
     interval::Interval,
     ray,
-    vec3::{self, Point3},
+    vec3::Point3,
 };
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd)]
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    rec: HitRecord,
+    rec: Hit,
 }
 
 impl Sphere {
@@ -17,13 +17,13 @@ impl Sphere {
         Sphere {
             center: *center,
             radius: f64::max(0.0, radius),
-            rec: HitRecord::new(),
+            rec: Hit::new(),
         }
     }
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &ray::Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &ray::Ray, ray_t: Interval, rec: &mut Hit) -> bool {
         let oc = self.center - *r.origin();
 
         let a = r.direction().lenght_squared();

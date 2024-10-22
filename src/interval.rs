@@ -32,15 +32,25 @@ impl Interval {
         }
     }
 
-    pub fn size(&self) -> Point {
+    pub const fn size(&self) -> Point {
         self.max - self.min
     }
 
-    pub fn contains(&self, x: Point) -> bool {
+    pub const fn contains(&self, x: Point) -> bool {
         self.min <= x && x <= self.max
     }
 
-    pub fn surrounds(&self, x: Point) -> bool {
+    pub const fn surrounds(&self, x: Point) -> bool {
         self.min < x && x < self.max
+    }
+
+    pub const fn clamp(&self, x: Point) -> Point {
+        if x < self.min {
+            self.min
+        } else if self.max < x {
+            self.max
+        } else {
+            x
+        }
     }
 }

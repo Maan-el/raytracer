@@ -7,16 +7,16 @@ use crate::{
 };
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd)]
-pub struct HitRecord {
+pub struct Hit {
     pub p: Point3,
     pub normal: Vec3,
     pub t: Point,
     pub front_face: bool,
 }
 
-impl HitRecord {
+impl Hit {
     pub const fn new() -> Self {
-        HitRecord {
+        Hit {
             p: Point3::new(),
             normal: Vec3::new(),
             t: 0.0,
@@ -35,34 +35,36 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, _r: &Ray, _ray_t: Interval, _rec: &mut Hit) -> bool {
         false
     }
 }
 
-impl Hittable for HitRecord {}
+impl Hittable for Hit {}
 
 #[derive(Default, Debug, Clone, PartialEq, PartialOrd)]
-pub struct HittableList<T: Hittable> {
-    pub rec: HitRecord,
+pub struct HitList<T: Hittable> {
+    pub rec: Hit,
     pub objects: Vec<Rc<T>>,
 }
 
-impl<T: Hittable> HittableList<T> {
+impl<T: Hittable> HitList<T> {
     pub const fn new() -> Self {
-        HittableList {
-            rec: HitRecord::new(),
+        HitList {
+            rec: Hit::new(),
             objects: Vec::new(),
         }
     }
 
+    #[allow(dead_code)]
     pub fn from(object: Rc<T>) -> Self {
-        HittableList {
-            rec: HitRecord::new(),
+        HitList {
+            rec: Hit::new(),
             objects: vec![object],
         }
     }
 
+    #[allow(dead_code)]
     pub fn clear(&mut self) {
         self.objects.clear();
     }
@@ -72,11 +74,11 @@ impl<T: Hittable> HittableList<T> {
     }
 }
 
-impl<T: Hittable> Hittable for HittableList<T> {
-    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
+impl<T: Hittable> Hittable for HitList<T> {
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut Hit) -> bool {
         let mut hit_anything = false;
         let mut closest_so_far = ray_t.max;
-        let mut temp_rec = HitRecord::new();
+        let mut temp_rec = Hit::new();
 
         for obj in self.objects.clone() {
             if obj.hit(r, Interval::from(ray_t.min, closest_so_far), &mut temp_rec) {

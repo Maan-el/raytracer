@@ -3,6 +3,8 @@ use std::{
     slice::SliceIndex,
 };
 
+use crate::{helpers::Generator, interval::Interval};
+
 pub type Point = f64;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
@@ -14,14 +16,12 @@ pub type Point3 = Vec3;
 
 impl Vec3 {
     /// Generates a Vec3 with all values initialized to zero
-    #[inline(always)]
     pub const fn new() -> Vec3 {
         Vec3 {
             points: [0.0, 0.0, 0.0],
         }
     }
 
-    #[inline(always)]
     pub fn from_scalars<T, U, V>(s1: T, s2: U, s3: V) -> Vec3
     where
         T: Into<Point> + Copy,
@@ -34,57 +34,87 @@ impl Vec3 {
     }
 
     /// .Recieves a slice and returns a Vec3
-    #[inline(always)]
     pub fn from_slice<T: Into<Point> + Copy>(values: [T; 3]) -> Vec3 {
         Vec3 {
             points: [values[0].into(), values[1].into(), values[2].into()],
         }
     }
 
-    #[inline(always)]
     pub const fn x(&self) -> Point {
         self.points[0]
     }
 
-    #[inline(always)]
     pub const fn y(&self) -> Point {
         self.points[1]
     }
 
-    #[inline(always)]
     pub const fn z(&self) -> Point {
         self.points[2]
     }
 
-    #[inline(always)]
     pub fn lenght(&self) -> f64 {
         self.lenght_squared().sqrt()
     }
 
-    #[inline(always)]
-    pub fn lenght_squared(&self) -> f64 {
-        self[0].powi(2) + self[1].powi(2) + self[2].powi(2)
+    pub const fn lenght_squared(&self) -> f64 {
+        self.points[0] * self.points[0]
+            + self.points[1] * self.points[1]
+            + self.points[2] * self.points[2]
     }
 
-    #[inline(always)]
-    pub fn dot(&self, other: &Vec3) -> Point {
-        self[0] * other[0] + self[1] * other[1] + self[2] * other[2]
+    pub const fn dot(&self, other: &Vec3) -> Point {
+        self.points[0] * other.points[0]
+            + self.points[1] * other.points[1]
+            + self.points[2] * other.points[2]
     }
 
-    #[inline(always)]
-    pub fn cross(&self, other: &Vec3) -> Vec3 {
+    pub const fn cross(&self, other: &Vec3) -> Vec3 {
         Vec3 {
             points: [
-                self[1] * other[2] - self[2] * other[1],
-                self[2] * other[0] - self[0] * other[2],
-                self[0] * other[1] - self[1] * other[0],
+                self.points[1] * other.points[2] - self.points[2] * other.points[1],
+                self.points[2] * other.points[0] - self.points[0] * other.points[2],
+                self.points[0] * other.points[1] - self.points[1] * other.points[0],
             ],
         }
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn unit_vector(&self) -> Vec3 {
         *self / self.lenght()
+    }
+
+    #[inline]
+    pub fn random() -> Vec3 {
+        let gen = Generator::random_points(3);
+        Vec3::from_scalars(gen[0], gen[1], gen[2])
+    }
+
+    #[inline]
+    pub fn random_interval(interval: Interval) -> Vec3 {
+        let gen = Generator::random_points_interval(interval, 3);
+        Vec3::from_scalars(gen[0], gen[1], gen[2])
+    }
+
+    #[allow(dead_code)]
+    #[inline]
+    pub fn random_unit_vector() -> Vec3 {
+        loop {
+            let p = Self::random_interval(Interval::from(-1, 1));
+            let lensq = p.lenght_squared();
+            if 1e-160 < lensq && lensq <= 1.0 {
+                return p / lensq.sqrt();
+            }
+        }
+    }
+
+    #[inline]
+    pub fn random_on_hemisphere(&self) -> Vec3 {
+        let on_unit_sphere = Self::random_unit_vector();
+        if self.dot(&on_unit_sphere) > 0.0 {
+            on_unit_sphere
+        } else {
+            -on_unit_sphere
+        }
     }
 }
 
@@ -93,7 +123,7 @@ where
     T: Into<Point> + Copy,
 {
     /// Takes a single scalar value and creates a new Vec3 with repeating values.
-    #[inline(always)]
+    #[inline]
     fn from(value: T) -> Self {
         Vec3 {
             points: [value.into(), value.into(), value.into()],
@@ -107,7 +137,7 @@ where
 {
     type Output = Point;
 
-    #[inline(always)]
+    #[inline]
     fn index(&self, index: Idx) -> &Self::Output {
         &self.points[index]
     }
@@ -116,7 +146,7 @@ where
 impl Neg for Vec3 {
     type Output = Vec3;
 
-    #[inline(always)]
+    #[inline]
     fn neg(self) -> Self::Output {
         Vec3 {
             points: [-self[0], -self[1], -self[2]],
@@ -130,7 +160,7 @@ where
 {
     type Output = Vec3;
 
-    #[inline(always)]
+    #[inline]
     fn add(self, rhs: T) -> Self::Output {
         let rhs = rhs.into();
         Vec3 {
@@ -145,7 +175,7 @@ where
 {
     type Output = Vec3;
 
-    #[inline(always)]
+    #[inline]
     fn sub(self, rhs: T) -> Self::Output {
         let rhs = rhs.into();
         Vec3 {
@@ -160,7 +190,7 @@ where
 {
     type Output = Vec3;
 
-    #[inline(always)]
+    #[inline]
     fn mul(self, rhs: T) -> Self::Output {
         let rhs = rhs.into();
         Vec3 {
@@ -175,7 +205,7 @@ where
 {
     type Output = Vec3;
 
-    #[inline(always)]
+    #[inline]
     fn div(self, rhs: T) -> Self::Output {
         self * (1.0 / rhs.into())
     }
@@ -184,7 +214,7 @@ where
 impl Add<Vec3> for Point {
     type Output = Vec3;
 
-    #[inline(always)]
+    #[inline]
     fn add(self, rhs: Vec3) -> Self::Output {
         let s: Vec3 = self.into();
         Vec3 {
@@ -196,7 +226,7 @@ impl Add<Vec3> for Point {
 impl Sub<Vec3> for Point {
     type Output = Vec3;
 
-    #[inline(always)]
+    #[inline]
     fn sub(self, rhs: Vec3) -> Self::Output {
         let s: Vec3 = self.into();
         Vec3 {
@@ -208,7 +238,7 @@ impl Sub<Vec3> for Point {
 impl Mul<Vec3> for Point {
     type Output = Vec3;
 
-    #[inline(always)]
+    #[inline]
     fn mul(self, rhs: Vec3) -> Self::Output {
         let s: Vec3 = self.into();
         Vec3 {
@@ -221,7 +251,7 @@ impl<T> AddAssign<T> for Vec3
 where
     T: Into<Vec3> + Copy,
 {
-    #[inline(always)]
+    #[inline]
     fn add_assign(&mut self, rhs: T) {
         *self = *self + rhs;
     }
@@ -231,9 +261,9 @@ impl<T> SubAssign<T> for Vec3
 where
     T: Into<Vec3> + Copy,
 {
-    #[inline(always)]
+    #[inline]
     fn sub_assign(&mut self, rhs: T) {
-        *self = *self - rhs
+        *self = *self - rhs;
     }
 }
 
@@ -241,7 +271,7 @@ impl<T> MulAssign<T> for Vec3
 where
     T: Into<Vec3> + Copy,
 {
-    #[inline(always)]
+    #[inline]
     fn mul_assign(&mut self, rhs: T) {
         *self = *self * rhs;
     }
