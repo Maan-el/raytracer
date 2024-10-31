@@ -1,11 +1,12 @@
 use std::fmt::Write;
 use std::fs;
+use std::path::Path;
 
 use crate::color::Color;
 
 pub struct Writer<'a> {
     data: String,
-    path: &'a str,
+    path: &'a Path,
 }
 
 const MAX_COLOR: u8 = 255;
@@ -15,7 +16,10 @@ impl<'a> Writer<'a> {
         let mut temp = String::with_capacity(width as usize * height as usize * 12 + 15);
         temp.push_str(&Self::metadata(width, height));
 
-        Writer { data: temp, path }
+        Writer {
+            data: temp,
+            path: Path::new(path),
+        }
     }
 
     pub fn add(&mut self, color: Color) {
@@ -23,6 +27,7 @@ impl<'a> Writer<'a> {
     }
 
     pub fn write(self) {
+        fs::create_dir_all(self.path.parent().unwrap()).unwrap();
         fs::write(self.path, self.data).unwrap();
     }
 
