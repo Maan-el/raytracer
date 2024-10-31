@@ -15,8 +15,7 @@ pub struct Generator {}
 impl Generator {
     #[inline]
     pub fn random_point() -> Point {
-        let mut rng = thread_rng();
-        rng.gen_range(0.0..1.0)
+        thread_rng().gen_range(0.0..1.0)
     }
 
     #[inline]
@@ -28,23 +27,20 @@ impl Generator {
     #[allow(dead_code)]
     #[inline]
     pub fn random_point_interval(interval: Interval) -> Point {
-        let mut rng = thread_rng();
-        rng.gen_range(interval.min..interval.max)
+        thread_rng().clone().gen_range(interval.min..interval.max)
     }
 
-    #[allow(dead_code)]
     #[inline]
     pub fn random_points_interval(interval: Interval, amount: usize) -> Vec<Point> {
-        let mut rng = thread_rng();
         let between = Uniform::from(interval.min..interval.max);
 
-        let mut buf = Vec::with_capacity(amount);
+        let mut rng = thread_rng();
+        let mut buf: Vec<Point> = Vec::with_capacity(amount);
 
         for _ in 0..amount {
             buf.push(between.sample(&mut rng));
         }
 
-        buf.shrink_to_fit();
         buf
     }
 }
